@@ -15,7 +15,7 @@ import * as types from '../redux/types';
 
 class Login extends Component {
     state = {
-        username: '',
+        email: '',
         password: ''
     }
 
@@ -25,17 +25,40 @@ class Login extends Component {
                 <FormContainer>
                     <Header>Login</Header>
                     <FormItem>
-                        <Label>Username</Label>
-                        <Input />
+                        <Label>Email</Label>
+                        <Input onChange={this.handleEmailChange} value={this.state.email} />
                     </FormItem>
                     <FormItem>
                         <Label>Password</Label>
-                        <Input />
+                        <Input type="password" onChange={this.handlePasswordChange} value={this.state.password} />
                     </FormItem>
-                    <Button>Login</Button>
+                    <Button onClick={this.handleClick}>Login</Button>
                 </FormContainer>
             </PageContainer>
         );
+    }
+
+    handleEmailChange = event => {
+        this.setState({ email: event.target.value})
+    }
+
+    handlePasswordChange = event => {
+        this.setState({ password: event.target.value})
+    }
+
+    handleClick = () => {
+        const { email, password } = this.state;
+
+        // do auth check here
+
+        if (email.includes('salesrep')) {
+            this.props.loginSalesRep()
+
+        } else {
+            this.props.loginCustomer()
+        }
+
+        this.props.history.push('/sale')
     }
 }
 
@@ -52,7 +75,7 @@ const PageContainer = styled.div`
 `;
 
 const FormContainer = styled.div`
-    width: 80%;
+    width: 350px;
     padding: 0 30px 30px 30px;
     background-color: white;
     margin-top: 4%;
@@ -73,13 +96,15 @@ const FormItem = styled.div`
 `;
 
 const Label = styled.div`
-
+    margin-bottom: 15px;
 `;
 
 const Input = styled.input`
     height: 30px;
-    width: 70px;
+    width: calc(100% - 10px);
+    margin-bottom: 15px;
     padding-left: 10px;
+    font-size: 13px;
 `;
 
 const Button = styled.div`
@@ -109,12 +134,9 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
     return {
-        loginSuccess
+        loginSalesRep: () => dispatch({ type: types.LOGIN_SALES_REP }),
+        loginCustomer: () => dispatch({ type: types.LOGIN_CUSTOMER })
     }
-}
-
-const loginSuccess = dispatch => {
-    dispatch({ type: types.LOGIN_SUCCESS })
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Login);
