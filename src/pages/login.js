@@ -71,14 +71,13 @@ const PageContainer = styled.div`
     justify-content: space-around;
     align-items: center;
     font-family: ${style.font_family};
-    max-width: 1000px;
 `;
 
 const FormContainer = styled.div`
     width: 350px;
     padding: 0 30px 30px 30px;
     background-color: white;
-    margin-top: 4%;
+    margin-top: 40px;
     -webkit-box-shadow: 0px 0px 14px -1px rgba(0,0,0,0.1);
     -moz-box-shadow: 0px 0px 14px -1px rgba(0,0,0,0.1);
     box-shadow: 0px 0px 14px -1px rgba(0,0,0,0.1);

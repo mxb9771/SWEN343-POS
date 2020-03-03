@@ -13,17 +13,30 @@ export const getProducts = () => {
     ]
 }
 
-export const makeSale = ({ quantities, prices, products }) => {
-    // axios.post('', {  })
+export const makeOrder = (order, total, customerId) => {
+    const body = {
+        customerID: customerId,
+        totalPrice: total,
+        netProfit: total - 100,
+        itemList: order
+    }
+
+    // axios.post('', { body })
     //     .then(res => {
 
     //     });
     alert('Sale Made!')
 }
 
-export const makeRefund = () => {
-    axios.post('', { })
-        .then(res => {
+export const makeRefund = (orderId) => {
+    const body = {
+        orderId,
+        description: 'Product Refund'
+    }
+
+    // axios.post('', { body})
+    //     .then(res => {
             
-        });
+    //     });
+    alert('Refund Made!')
 }

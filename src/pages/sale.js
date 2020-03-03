@@ -8,32 +8,31 @@ import { connect } from 'react-redux';
 
 import style from '../style';
 import * as types from '../redux/types';
-import * as api from '../usecases';
+import * as api from '../api';
 
 // component
 
-const INITIAL_STATE = {
-    quantities: { },
-    prices: { },
-    products: [],
-    total: 0,
-    numItems: 0,
-    isButtonActive: false,
-    customerId: '',
-    isInStock: true
-}
-
 class Sale extends Component {
-    state = INITIAL_STATE
+    INITIAL_STATE = {
+        order: {},
+        products: api.getProducts(),
+        total: 0,
+        numItems: 0,
+        isButtonActive: false,
+        customerId: '',
+        isInStock: true,
+        orderId: ''
+    }
 
-    componentDidMount () {
+    state = this.INITIAL_STATE
+
+    componentWillMount () {
         if (!this.props.uid) {
             this.props.history.push('/login')
         }
 
-
-        let products = api.getProducts();
-        this.setState({ products, prices: this.getPrices(products) });
+        // let products = api.getProducts();
+        this.setState({ order: this.getOrder(this.state.products) });
     }
 
     render () {
@@ -61,11 +60,11 @@ class Sale extends Component {
                             {   this.state.products.map(p => 
                                     <this.Product
                                         id={p.id}
-                                        isActive={this.state.quantities[p.id] && this.state.quantities[p.id] > 0}
+                                        isActive={this.state.order[p.id] && this.state.order[p.id].quantity > 0}
                                         name={p.name}
                                         count={p.count}
-                                        price={this.state.prices[p.id] || null}
-                                        quantity={this.state.quantities[p.id] || null}
+                                        price={this.state.order[p.id].price || ''}
+                                        quantity={this.state.order[p.id].quantity || ''}
                                         handleQuantityChange={this.handleQuantityChange.bind(this)}
                                         handlePriceChange={this.handlePriceChange.bind(this)}
                                     />
@@ -81,7 +80,22 @@ class Sale extends Component {
                     </Table>
                     <SubmitButton 
                         disabled={!this.state.isButtonActive}
-                        onClick={this.state.isButtonActive && this.handleButtonClick.bind(this)}>Submit</SubmitButton>
+                        onClick={this.state.isButtonActive ? this.handleOrderButtonClick.bind(this) : null}>
+                            {this.props.user_type === 'sales_rep' ? 'Complete' : 'Purchase'}
+                    </SubmitButton>
+                </FormContainer>
+                <FormContainer>
+                    <Header>Make a Refund</Header>
+                    <CustomerEntry>
+                        <Label>Enter Order ID</Label>
+                        <NameInput value={this.state.orderId} onChange={this.handleOrderChange.bind(this)} />
+                    </CustomerEntry>
+                    <SubmitButton 
+                        disabled={this.state.orderId === ''} 
+                        onClick={this.state.orderId !== '' ? this.handleRefundButtonClick.bind(this) : null}
+                    >
+                        Refund
+                    </SubmitButton>
                 </FormContainer>
             </PageContainer>
         );
@@ -127,22 +141,30 @@ class Sale extends Component {
 
     // helpers
 
-    getPrices (products) {
-        let prices = {}
+    getOrder (products) {
+        let order = []
         products.forEach(p => {
-            prices[p.id] = p.price
+            let item = {}
+            item.itemId = p.id
+            item.price = p.price
+            item.quantity = 0
+            order.push(item)
         })
-        return prices;
+        return order;
     }
 
     handleCustomerChange (event) {
         this.setState({ customerId: event.target.value }, () => this.setButtonActive());
     }
+
+    handleOrderChange (event) {
+        this.setState({ orderId: event.target.value });
+    }
     
     handleQuantityChange (event, id) {
-        let quantities = this.state.quantities
-        quantities[id] = event.target.value
-        this.setState({ quantities }, () => {
+        let order = this.state.order
+        order[id].quantity = parseInt(event.target.value) || 0
+        this.setState({ order }, () => {
             this.calculateTotalPrice()
             this.calculateNumberOfItems()
             this.checkStock();
@@ -150,17 +172,17 @@ class Sale extends Component {
     }
     
     handlePriceChange (event, id) {
-        let prices = this.state.prices
-        prices[id] = event.target.value
-        this.setState({ prices }, () => {
+        let order = this.state.order
+        order[id].price = parseInt(event.target.value)
+        this.setState({ order }, () => {
             this.calculateTotalPrice()
         });
     }
     
     calculateNumberOfItems () {
         let count = 0;
-        Object.entries(this.state.quantities).forEach(item => {
-            if (item[1] > 0) {
+        Object.entries(this.state.order).forEach(item => {
+            if (item.quantity > 0) {
                 count += 1;
             }
         })
@@ -169,10 +191,9 @@ class Sale extends Component {
     
     calculateTotalPrice () {
         let total = 0
-        Object.entries(this.state.quantities).forEach((item) => {
-            const price = this.state.prices[item[0]]
-            const quantity = item[1]
-            total += parseInt(price * quantity);
+        Object.entries(this.state.order).forEach((item) => {
+            const { price, quantity } = item[1];
+            total += price * quantity;
         })
 
         this.setState({ total }, () => this.setButtonActive())
@@ -185,8 +206,8 @@ class Sale extends Component {
     }
 
     checkStock () {
-        Object.entries(this.state.quantities).forEach((item) => {
-            const quantity = item[1]
+        Object.entries(this.state.order).forEach((item) => {
+            const quantity = item.quantity
             const id = item[0]
             if (this.state.products[id].count < quantity) {
                 this.setState({ isInStock: false })
@@ -196,14 +217,20 @@ class Sale extends Component {
         })
     }
 
-    handleButtonClick () {
-        const { quantities, prices, products } = this.state;
-        api.makeSale({ quantities, prices, products })
-        this.setState({ quantities: {}})
+    handleOrderButtonClick () {
+        const { order, total, customerId, products } = this.state;
+        api.makeOrder(order, total, this.props.user_type === 'sales_rep' ? customerId : this.props.uid)
+        this.setState(this.INITIAL_STATE)
+        this.setState({ products, order: this.getOrder(products) });
+    }
+
+    handleRefundButtonClick () {
+        api.makeRefund(this.state.orderId)
+        this.setState({ orderId: '' })
     }
 
     handleLogout () {
-        this.setState(INITIAL_STATE)
+        this.setState(this.INITIAL_STATE)
         this.props.logout();
         this.props.history.push('/login')
     }
@@ -218,7 +245,6 @@ const PageContainer = styled.div`
     justify-content: space-around;
     align-items: center;
     font-family: ${style.font_family};
-    max-width: 1000px;
 `;
 
 
@@ -315,9 +341,14 @@ const Logout = styled.div`
     cursor: pointer;
     &:hover {
         color: black;
+        border-color: black;
     }
     margin: 25px 0;
+    margin-left: 10%;
+    height: 30px;
     align-self: flex-start;
+    border: 2px solid #555555;
+    line-height: 30px;
 `;
 
 // redux:
