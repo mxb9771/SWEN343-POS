@@ -1,8 +1,9 @@
 import axios from 'axios';
 
-const ec2_url = 'http://ec2-3-12-198-129.us-east-2.compute.amazonaws.com:8080';
+const ec2_url = 'http://ec2-3-135-232-182.us-east-2.compute.amazonaws.com:8080';
 const headers = {
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
+    "Cache-Control": "no-cache"
 }
 
 export const getProducts = () => {
@@ -19,9 +20,10 @@ export const getProducts = () => {
     ]
 }
 
-export const makeOrder = (order, total, customerId) => {
+export const makeOrder = (order, total, name, address) => {
     const body = {
-        customerId,
+        name,
+        address,
         totalPrice: total,
         netProfit: total - 100,
         // itemList: order
@@ -31,6 +33,16 @@ export const makeOrder = (order, total, customerId) => {
         .then(res => console.log(res))
    
     alert('Sale Made!')
+}
+
+export const getAllOrders = async () => {
+    let orders = await axios.get(`${ec2_url}/order/all`, { headers })
+    return orders
+}
+
+export const getOrderStatus = async orderId => {
+    let orders = await axios.get(`${ec2_url}/order/${orderId}/status`, { headers })
+    return orders
 }
 
 export const makeRefund = async (orderId) => {

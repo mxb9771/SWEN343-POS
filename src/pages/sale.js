@@ -7,8 +7,19 @@ import { connect } from 'react-redux';
 // local imports:
 
 import style from '../style';
-import * as types from '../redux/types';
+import * as types from '../redux/action_types';
+import * as user_types from '../redux/user_types';
 import * as api from '../api';
+import { Header } from '../components';
+import {
+    PageContainer,
+    FormHeader,
+    FormContainer,
+    SubmitButton,
+    CustomerEntry,
+    NameInput,
+    Label
+  } from './styled';
 
 // component
 
@@ -19,7 +30,8 @@ class Sale extends Component {
         total: 0,
         numItems: 0,
         isButtonActive: false,
-        customerId: '',
+        name: '',
+        address: '',
         isInStock: true,
         orderId: ''
     }
@@ -27,28 +39,26 @@ class Sale extends Component {
     state = this.INITIAL_STATE
 
     componentWillMount () {
-        if (!this.props.uid) {
-            this.props.history.push('/login')
-        }
-
         // let products = api.getProducts();
+        let orders = api.getAllOrders();
+        console.warn('orders', orders)
         this.setState({ order: this.getOrder(this.state.products) });
     }
 
     render () {
         return (
             <PageContainer>
-                <Logout onClick={this.handleLogout.bind(this)}>Logout</Logout>
+                <Header navigate={this.navigate.bind(this)} logout={this.handleLogout.bind(this)} user_type={this.props.user_type} />
                 <FormContainer>
-                    <Header>{this.props.user_type === 'sales_rep' ? 'Make a Sale' : 'Make a Purchase'}</Header>
-                    { this.props.user_type === 'sales_rep' &&
-                        ( 
-                            <CustomerEntry>
-                                <Label>Enter Customer ID</Label>
-                                <NameInput value={this.state.customerId} onChange={this.handleCustomerChange.bind(this)} />
-                            </CustomerEntry>
-                        )
-                    }
+                    <FormHeader>{this.props.user_type === 'sales_rep' ? 'Make a Sale' : 'Make a Purchase'}</FormHeader>
+                    <CustomerEntry>
+                        <Label>Name</Label>
+                        <NameInput value={this.state.name} onChange={this.handleCustomerChange.bind(this)} />
+                    </CustomerEntry>
+                    <CustomerEntry>
+                        <Label>Mailing Address</Label>
+                        <NameInput value={this.state.address} onChange={this.handleAddressChange.bind(this)} />
+                    </CustomerEntry>
                     <Table>
                         <HeaderRow>
                             <TableHeader>Product</TableHeader>
@@ -82,19 +92,6 @@ class Sale extends Component {
                         disabled={!this.state.isButtonActive}
                         onClick={this.state.isButtonActive ? this.handleOrderButtonClick.bind(this) : null}>
                             {this.props.user_type === 'sales_rep' ? 'Complete' : 'Purchase'}
-                    </SubmitButton>
-                </FormContainer>
-                <FormContainer>
-                    <Header>Make a Refund</Header>
-                    <CustomerEntry>
-                        <Label>Enter Order ID</Label>
-                        <NameInput value={this.state.orderId} onChange={this.handleOrderChange.bind(this)} />
-                    </CustomerEntry>
-                    <SubmitButton 
-                        disabled={this.state.orderId === ''} 
-                        onClick={this.state.orderId !== '' ? this.handleRefundButtonClick.bind(this) : null}
-                    >
-                        Refund
                     </SubmitButton>
                 </FormContainer>
             </PageContainer>
@@ -154,7 +151,11 @@ class Sale extends Component {
     }
 
     handleCustomerChange (event) {
-        this.setState({ customerId: event.target.value }, () => this.setButtonActive());
+        this.setState({ name: event.target.value }, () => this.setButtonActive());
+    }
+
+    handleAddressChange (event) {
+        this.setState({ address: event.target.value }, () => this.setButtonActive());
     }
 
     handleOrderChange (event) {
@@ -200,8 +201,8 @@ class Sale extends Component {
     }
 
     setButtonActive () {
-        let isCustomerReqMet = this.props.user_type === 'customer' || this.state.customerId !== '';
-        let isButtonActive = this.state.total > 0 && this.state.isInStock && isCustomerReqMet;
+        let isCustomerReqMet = this.state.name !== '' && this.state.address !== '';
+        let isButtonActive = (this.state.total > 0 || this.props.user_type !== user_types.CUSTOMER) && this.state.isInStock && isCustomerReqMet;
         this.setState({ isButtonActive })
     }
 
@@ -218,15 +219,14 @@ class Sale extends Component {
     }
 
     handleOrderButtonClick () {
-        const { order, total, customerId, products } = this.state;
-        api.makeOrder(order, total, this.props.user_type === 'sales_rep' ? customerId : this.props.uid)
+        const { order, total, name, address, products } = this.state;
+        api.makeOrder(order, total, name, address)
         this.setState(this.INITIAL_STATE)
         this.setState({ products, order: this.getOrder(products) });
     }
 
-    handleRefundButtonClick () {
-        api.makeRefund(this.state.orderId)
-        this.setState({ orderId: '' })
+    navigate (to) {
+        this.props.history.push(to);
     }
 
     handleLogout () {
@@ -237,33 +237,6 @@ class Sale extends Component {
 }
 
 // styled components:
-
-const PageContainer = styled.div`
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    align-items: center;
-    font-family: ${style.font_family};
-`;
-
-
-const Header = styled.h1`
-    color: black;
-    text-align: center;
-    margin-top: 30px;
-    margin-bottom: 20px;
-`;
-
-const FormContainer = styled.div`
-    width: 80%;
-    padding: 0 30px 30px 30px;
-    background-color: white;
-    margin-bottom: 4%;
-    -webkit-box-shadow: 0px 0px 14px -1px rgba(0,0,0,0.1);
-    -moz-box-shadow: 0px 0px 14px -1px rgba(0,0,0,0.1);
-    box-shadow: 0px 0px 14px -1px rgba(0,0,0,0.1);
-`;
 
 const Table = styled.table`
     width: 100%;
@@ -301,54 +274,6 @@ const TableInput = styled.input`
     width: 50px;
     padding-left: 10px;
     font-size: 13px;
-`;
-
-const SubmitButton = styled.div`
-    background-color: #16a085;
-    text-align: center;
-    height: 40px;
-    line-height: 40px;
-    color: white;
-    cursor: ${props => props.disabled ? '' : 'pointer'};
-    opacity: ${props => props.disabled ? 0.5 : 1.0};
-    font-size: 18px;
-    &:hover {
-        background-color: ${props => props.disabled ? '#16a085' : '#168871'};
-    }
-    margin-top: 30px;
-`
-
-const CustomerEntry = styled.div`
-
-`;
-
-const NameInput = styled.input`
-    height: 30px;
-    width: 200px;
-    padding-left: 10px;
-    font-size: 13px;
-`;
-
-const Label = styled.div`
-    margin-bottom: 15px;
-`;
-
-const Logout = styled.div`
-    font-size: 15px;
-    color: #555555;
-    width: 100px;
-    text-align: center;
-    cursor: pointer;
-    &:hover {
-        color: black;
-        border-color: black;
-    }
-    margin: 25px 0;
-    margin-left: 10%;
-    height: 30px;
-    align-self: flex-start;
-    border: 2px solid #555555;
-    line-height: 30px;
 `;
 
 // redux:

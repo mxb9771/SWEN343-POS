@@ -8,7 +8,7 @@ import style from '../style';
 
 // local imports:
 
-import * as types from '../redux/types';
+import * as types from '../redux/action_types';
 
 
 // component:
@@ -22,6 +22,7 @@ class Login extends Component {
     render () {
         return (
             <PageContainer>
+                <Back onClick={() => this.props.history.push('/')}>{'< Back'}</Back>
                 <FormContainer>
                     <Header>Login</Header>
                     <FormItem>
@@ -54,6 +55,8 @@ class Login extends Component {
         if (email.includes('salesrep')) {
             this.props.loginSalesRep()
 
+        } else if (email.includes('salesmanager')) {
+            this.props.loginSalesManager()
         } else {
             this.props.loginCustomer()
         }
@@ -120,6 +123,21 @@ const Button = styled.div`
     margin-top: 30px;
 `;
 
+const Back = styled.div`
+    font-size: 15px;
+    color: #555555;
+    width: 100px;
+    text-align: center;
+    cursor: pointer;
+    &:hover {
+        color: black;
+        border-color: black;
+    }
+    position: absolute;
+    left: 0;
+    top: 15px;
+`;
+
 // redux:
 
 const mapStateToProps = state => {
@@ -134,7 +152,8 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
     return {
         loginSalesRep: () => dispatch({ type: types.LOGIN_SALES_REP }),
-        loginCustomer: () => dispatch({ type: types.LOGIN_CUSTOMER })
+        loginCustomer: () => dispatch({ type: types.LOGIN_CUSTOMER }),
+        loginSalesManager: () => dispatch({ type: types.LOGIN_SALES_MANAGER })
     }
 }
 
