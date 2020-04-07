@@ -7,6 +7,7 @@ import Login from './pages/login';
 import Sale from './pages/sale';
 import Refund from './pages/refund';
 import Stats from './pages/stats';
+import Status from './pages/status';
 
 import Reducer from './redux/reducer';
 
@@ -23,6 +24,7 @@ class App extends Component {
                 <Route path='/refund' component={Refund} />
                 <Route path='/login' component={Login} />
                 <Route path='/stats' component={Stats} />
+                <Route path='/status' component={Status} />
             </Switch>
         </Router>
       </Provider>

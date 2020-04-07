@@ -58,6 +58,37 @@ const Label = styled.div`
     margin-bottom: 15px;
 `;
 
+const Table = styled.table`
+    width: 100%;
+`;
+
+const HeaderRow = styled.tr`
+    height: 90px;
+`;
+
+const TableBody = styled.tbody`
+    
+`;
+
+const TableRow = styled.tr`
+    height: 60px;
+    width: 100%;
+`;
+
+const TableHeader = styled.th`
+    
+`;
+
+const TableData = styled.td`
+    text-align: center;
+    padding: 10px;
+    background-color: ${props => props.isActive ? "#dddddd" : props.noFill ? "" : "#eeeeee"};
+    font-size: ${props => props.big ? '18px' : ''};
+    /* &:hover {
+        background-color: #16a085;
+    } */
+`;
+
 export {
   PageContainer,
   FormHeader,
@@ -65,5 +96,11 @@ export {
   SubmitButton,
   CustomerEntry,
   NameInput,
-  Label
+  Label,
+  Table,
+  HeaderRow,
+  TableBody,
+  TableRow,
+  TableHeader,
+  TableData
 }

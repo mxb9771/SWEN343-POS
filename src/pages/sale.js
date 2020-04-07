@@ -18,7 +18,13 @@ import {
     SubmitButton,
     CustomerEntry,
     NameInput,
-    Label
+    Label,
+    Table,
+    TableBody,
+    TableRow,
+    HeaderRow,
+    TableHeader,
+    TableData
   } from './styled';
 
 // component
@@ -26,31 +32,31 @@ import {
 class Sale extends Component {
     INITIAL_STATE = {
         order: {},
-        products: api.getProducts(),
-        total: 0,
+        products: [],
+        total: 0.0,
         numItems: 0,
         isButtonActive: false,
         name: '',
         address: '',
         isInStock: true,
-        orderId: ''
+        orderId: '',
+        loading: true
     }
 
     state = this.INITIAL_STATE
 
     componentWillMount () {
-        // let products = api.getProducts();
-        let orders = api.getAllOrders();
-        console.warn('orders', orders)
-        this.setState({ order: this.getOrder(this.state.products) });
+        api.getAllProducts()
+            .then(res => this.setState({ order: this.getOrder(JSON.parse(res)), products: JSON.parse(res), loading: false }))
     }
 
     render () {
+        if (this.state.loading) return <div></div>
         return (
             <PageContainer>
                 <Header navigate={this.navigate.bind(this)} logout={this.handleLogout.bind(this)} user_type={this.props.user_type} />
                 <FormContainer>
-                    <FormHeader>{this.props.user_type === 'sales_rep' ? 'Make a Sale' : 'Make a Purchase'}</FormHeader>
+                    <FormHeader>{this.props.user_type === user_types.SALES_REP ? 'Make a Sale' : 'Make a Purchase'}</FormHeader>
                     <CustomerEntry>
                         <Label>Name</Label>
                         <NameInput value={this.state.name} onChange={this.handleCustomerChange.bind(this)} />
@@ -72,8 +78,8 @@ class Sale extends Component {
                                         id={p.id}
                                         isActive={this.state.order[p.id] && this.state.order[p.id].quantity > 0}
                                         name={p.name}
-                                        count={p.count}
-                                        price={this.state.order[p.id].price || ''}
+                                        count={p.stock}
+                                        pricePer={this.state.order[p.id].pricePer || ''}
                                         quantity={this.state.order[p.id].quantity || ''}
                                         handleQuantityChange={this.handleQuantityChange.bind(this)}
                                         handlePriceChange={this.handlePriceChange.bind(this)}
@@ -100,24 +106,24 @@ class Sale extends Component {
 
     // sub components
 
-    Product = ({ id, name, price, quantity, handleQuantityChange, handlePriceChange, isActive, count }) => {
+    Product = ({ id, name, pricePer, quantity, handleQuantityChange, handlePriceChange, isActive, count }) => {
         return (
             <>
                 <TableRow>
                     <TableData isActive={isActive} width={200}>{name}</TableData>
                     <TableData isActive={isActive} width={30}>{count}</TableData>
                     <TableData isActive={isActive} width={50}>
-                        { this.props.user_type === 'customer' &&
-                            ('$ ' + price)
+                        { this.props.user_type === user_types.CUSTOMER &&
+                            ('$ ' + pricePer)
                         }
-                        { this.props.user_type === 'sales_rep' &&
+                        { this.props.user_type !== user_types.CUSTOMER &&
                             (   <>
                                     <p style={{ display: 'inline' }}>{`$   `}</p>
                                     <TableInput 
                                         onChange={(event) => handlePriceChange(event, id)}
                                         type="text"
                                         pattern="[0-9]*"
-                                        value={price} 
+                                        value={pricePer} 
                                     />
                                 </>
                             )
@@ -143,7 +149,7 @@ class Sale extends Component {
         products.forEach(p => {
             let item = {}
             item.itemId = p.id
-            item.price = p.price
+            item.pricePer = parseFloat(p.price)
             item.quantity = 0
             order.push(item)
         })
@@ -174,7 +180,7 @@ class Sale extends Component {
     
     handlePriceChange (event, id) {
         let order = this.state.order
-        order[id].price = parseInt(event.target.value)
+        order[id].pricePer = parseFloat(event.target.value)
         this.setState({ order }, () => {
             this.calculateTotalPrice()
         });
@@ -191,10 +197,10 @@ class Sale extends Component {
     }
     
     calculateTotalPrice () {
-        let total = 0
+        let total = 0.0
         Object.entries(this.state.order).forEach((item) => {
-            const { price, quantity } = item[1];
-            total += price * quantity;
+            const { pricePer, quantity } = item[1];
+            total += parseFloat(pricePer * quantity);
         })
 
         this.setState({ total }, () => this.setButtonActive())
@@ -202,7 +208,7 @@ class Sale extends Component {
 
     setButtonActive () {
         let isCustomerReqMet = this.state.name !== '' && this.state.address !== '';
-        let isButtonActive = (this.state.total > 0 || this.props.user_type !== user_types.CUSTOMER) && this.state.isInStock && isCustomerReqMet;
+        let isButtonActive = this.state.total > 0 && (this.props.user_type !== user_types.CUSTOMER || this.state.isInStock) && isCustomerReqMet;
         this.setState({ isButtonActive })
     }
 
@@ -220,7 +226,7 @@ class Sale extends Component {
 
     handleOrderButtonClick () {
         const { order, total, name, address, products } = this.state;
-        api.makeOrder(order, total, name, address)
+        api.makeOrder(order, total, name, address, this.props.uid)
         this.setState(this.INITIAL_STATE)
         this.setState({ products, order: this.getOrder(products) });
     }
@@ -237,37 +243,6 @@ class Sale extends Component {
 }
 
 // styled components:
-
-const Table = styled.table`
-    width: 100%;
-`;
-
-const HeaderRow = styled.tr`
-    height: 90px;
-`;
-
-const TableBody = styled.tbody`
-    
-`;
-
-const TableRow = styled.tr`
-    height: 60px;
-    width: 100%;
-`;
-
-const TableHeader = styled.th`
-    
-`;
-
-const TableData = styled.td`
-    text-align: center;
-    padding: 10px;
-    background-color: ${props => props.isActive ? "#dddddd" : props.noFill ? "" : "#eeeeee"};
-    font-size: ${props => props.big ? '18px' : ''};
-    /* &:hover {
-        background-color: #16a085;
-    } */
-`;
 
 const TableInput = styled.input`
     height: 30px;

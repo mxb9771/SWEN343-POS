@@ -22,17 +22,22 @@ import {
 
 // component
 
-class Refund extends Component {
+class Status extends Component {
     INITIAL_STATE = {
       orderId: '',
       isModalShowing: false,
-      refund: ''
+      status: ''
     }
 
     state = this.INITIAL_STATE
 
     componentWillMount () {
-        
+        // if (!this.props.uid) {
+        //     this.props.history.push('/login')
+        // }
+
+        // let products = api.getProducts();
+        // this.setState({ order: this.getOrder(this.state.products) });
     }
 
     render () {
@@ -40,24 +45,24 @@ class Refund extends Component {
             <PageContainer>
                 { this.state.isModalShowing && (
                     <Modal close={this.hideModal.bind(this)}>
-                      <RefundMessage>
-                        Refund: <strong>{this.state.refund}</strong>
-                      </RefundMessage>
+                      <StatusMessage>
+                        Order Status: <strong>{this.state.status}</strong>
+                      </StatusMessage>
                     </Modal>
                   )
                 }
                 <Header navigate={this.navigate.bind(this)} logout={this.handleLogout.bind(this)} user_type={this.props.user_type} />
                 <FormContainer>
-                    <FormHeader>Make a Refund</FormHeader>
+                    <FormHeader>Check Order Status</FormHeader>
                     <CustomerEntry>
                         <Label>Order ID</Label>
                         <NameInput value={this.state.orderId} onChange={this.handleOrderChange.bind(this)} />
                     </CustomerEntry>
-                    <SubmitButton 
+                    <SubmitButton
                         disabled={this.state.orderId === ''} 
-                        onClick={this.state.orderId !== '' ? this.handleRefundButtonClick.bind(this) : null}
+                        onClick={this.state.orderId !== '' ? this.handleStatusButtonClick.bind(this) : null}
                     >
-                        Refund
+                        Check
                     </SubmitButton>
                 </FormContainer>
             </PageContainer>
@@ -66,10 +71,10 @@ class Refund extends Component {
 
     // helpers
 
-    handleRefundButtonClick () {
-        api.makeRefund(this.state.orderId)
+    handleStatusButtonClick () {
+        api.getOrderStatus(this.state.orderId)
           .then(res => this.setState({
-            orderId: '', refund: res, isModalShowing: true
+            orderId: '', status: res, isModalShowing: true
           }))
     }
 
@@ -82,7 +87,7 @@ class Refund extends Component {
     }
 
     hideModal () {
-      this.setState({ isModalShowing: false, refund: '' });
+      this.setState({ isModalShowing: false, status: '' });
     }
 
     handleLogout () {
@@ -98,7 +103,7 @@ class Refund extends Component {
 
 // styled:
 
-const RefundMessage = styled.div`
+const StatusMessage = styled.div`
   font-size: 20px;
   color: #000;
 `;
@@ -120,4 +125,4 @@ const mapStateToProps = state => {
     };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(Refund);
+export default connect(mapStateToProps, mapDispatchToProps)(Status);

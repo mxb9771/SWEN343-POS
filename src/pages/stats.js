@@ -14,14 +14,21 @@ import { Header } from '../components';
 import {
   PageContainer,
   FormHeader,
-  FormContainer
+  FormContainer,
+  Table,
+  TableBody,
+  TableRow,
+  HeaderRow,
+  TableHeader,
+  TableData
 } from './styled';
 
 // component
 
 class Stats extends Component {
     INITIAL_STATE = {
-      
+      loading: true,
+      orders: []
     }
 
     state = this.INITIAL_STATE
@@ -30,19 +37,64 @@ class Stats extends Component {
       if (this.props.user_type !== user_types.SALES_MANAGER) {
         this.props.history.push('/login')
       }
+      api.getAllOrders()
+        .then(res1 => { this.setState({ orders: JSON.parse(res1) }); return api.getOrderStats()})
+        .then(res2 => console.warn(JSON.parse(res2)));
     }
 
     render () {
+        if (this.state.loading) return <div></div>
         return (
             <PageContainer>
                 <Header navigate={this.navigate.bind(this)} logout={this.handleLogout.bind(this)} user_type={this.props.user_type} />
                 <FormContainer>
                     <FormHeader>Order Statistics</FormHeader>
-                    
+                    <StatsContainer><Stat>Most: <strong>ID</strong></Stat></StatsContainer>
+                </FormContainer>
+                <FormContainer>
+                    <FormHeader>Order Log</FormHeader>
+                    <Table>
+                        <HeaderRow>
+                            <TableHeader>ID</TableHeader>
+                            <TableHeader>Customer ID</TableHeader>
+                            <TableHeader>Sales Person ID</TableHeader>
+                            <TableHeader>Total Price</TableHeader>
+                            <TableHeader>Net Profit</TableHeader>
+                            <TableHeader>Status</TableHeader>
+                        </HeaderRow>
+                        <TableBody>
+                            {   this.state.orders.map(o => 
+                                    <this.Order
+                                        id={o.id}
+                                        customerId={o.customerId}
+                                        salesPersonId={o.salesPersonId}
+                                        totalPrice={o.totalPrice}
+                                        netProfit={o.netProfit}
+                                        orderStatus={o.orderStatus}
+                                    />
+                                )
+                            }     
+                        </TableBody>
+                    </Table>
                 </FormContainer>
             </PageContainer>
         );
     }
+
+    Order = ({ id, customerId, salesPersonId, totalPrice, netProfit, orderStatus }) => {
+      return (
+          <>
+              <TableRow>
+                <TableData width={50}>{id}</TableData>
+                <TableData width={50}>{customerId}</TableData>
+                <TableData width={50}>{salesPersonId}</TableData>
+                <TableData width={50}>{totalPrice}</TableData>
+                <TableData width={50}>{netProfit}</TableData>
+                <TableData width={50}>{orderStatus}</TableData>
+              </TableRow>
+          </>
+      );
+  }
 
     // helpers
 
@@ -56,6 +108,18 @@ class Stats extends Component {
       this.props.history.push(to);
   }
 }
+
+// styled:
+
+const StatsContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+`;
+
+const Stat = styled.div`
+  font-size: 20px;
+`;
 
 // redux:
 

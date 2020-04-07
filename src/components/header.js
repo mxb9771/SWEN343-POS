@@ -12,6 +12,7 @@ const Header = ({ user_type, logout, navigate }) => {
     <Container>
       <Link onClick={() => navigate('/sale')}>Sale</Link>
       <Link onClick={() => navigate('/refund')}>Refund</Link>
+      <Link onClick={() => navigate('/status')}>Status</Link>
       { user_type === SALES_MANAGER && <Link onClick={() => navigate('/stats')}>Stats</Link>}
       <RightPosition>
         <AuthLink onClick={logout}>{ user_type !== CUSTOMER ? 'Logout' : 'Login'}</AuthLink>
@@ -44,14 +45,14 @@ const RightPosition = styled.div`
 
 const Link = styled.div`
   font-size: 15px;
-    color: #555555;
-    width: 100px;
-    text-align: center;
-    cursor: pointer;
-    &:hover {
-        color: black;
-        border-color: black;
-    }
+  color: #555555;
+  width: 100px;
+  text-align: center;
+  cursor: pointer;
+  &:hover {
+      color: black;
+      border-color: black;
+  }
 `;
 
 const AuthLink = styled.div`
