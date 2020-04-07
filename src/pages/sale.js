@@ -4,13 +4,14 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 
+
 // local imports:
 
 import style from '../style';
 import * as types from '../redux/action_types';
 import * as user_types from '../redux/user_types';
 import * as api from '../api';
-import { Header } from '../components';
+import { Header, Modal } from '../components';
 import {
     PageContainer,
     FormHeader,
@@ -40,7 +41,8 @@ class Sale extends Component {
         address: '',
         isInStock: true,
         orderId: '',
-        loading: true
+        loading: true,
+        isModalShowing: false,
     }
 
     state = this.INITIAL_STATE
@@ -51,9 +53,17 @@ class Sale extends Component {
     }
 
     render () {
-        if (this.state.loading) return <div></div>
+        if (this.state.loading) return <div style={{ fontSize: 35, marginTop: 10, marginLeft: 10 }}>... Loading</div>
         return (
             <PageContainer>
+                { this.state.isModalShowing && (
+                    <Modal close={this.hideModal.bind(this)}>
+                      <SaleMessage>
+                        Order ID: <strong>{this.state.orderId}</strong>
+                      </SaleMessage>
+                    </Modal>
+                  )
+                }
                 <Header navigate={this.navigate.bind(this)} logout={this.handleLogout.bind(this)} user_type={this.props.user_type} />
                 <FormContainer>
                     <FormHeader>{this.props.user_type === user_types.SALES_REP ? 'Make a Sale' : 'Make a Purchase'}</FormHeader>
@@ -156,6 +166,14 @@ class Sale extends Component {
         return order;
     }
 
+    showModal () {
+        this.setState({ isModalShowing: true });
+    }
+  
+    hideModal () {
+        this.setState({ isModalShowing: false, orderId: '' });
+    }
+
     handleCustomerChange (event) {
         this.setState({ name: event.target.value }, () => this.setButtonActive());
     }
@@ -226,9 +244,12 @@ class Sale extends Component {
 
     handleOrderButtonClick () {
         const { order, total, name, address, products } = this.state;
+        this.setState({ loading: true })
         api.makeOrder(order, total, name, address, this.props.uid)
-        this.setState(this.INITIAL_STATE)
-        this.setState({ products, order: this.getOrder(products) });
+            .then(res => {
+                this.setState(this.INITIAL_STATE)
+                this.setState({ products, order: this.getOrder(products), loading: false, isModalShowing: true, orderId: res });
+            });
     }
 
     navigate (to) {
@@ -249,6 +270,11 @@ const TableInput = styled.input`
     width: 50px;
     padding-left: 10px;
     font-size: 13px;
+`;
+
+const SaleMessage = styled.div`
+  font-size: 20px;
+  color: #000;
 `;
 
 // redux:

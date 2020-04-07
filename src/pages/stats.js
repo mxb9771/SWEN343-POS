@@ -28,7 +28,8 @@ import {
 class Stats extends Component {
     INITIAL_STATE = {
       loading: true,
-      orders: []
+      orders: [],
+      stats: {}
     }
 
     state = this.INITIAL_STATE
@@ -38,18 +39,25 @@ class Stats extends Component {
         this.props.history.push('/login')
       }
       api.getAllOrders()
-        .then(res1 => { this.setState({ orders: JSON.parse(res1) }); return api.getOrderStats()})
-        .then(res2 => console.warn(JSON.parse(res2)));
+        .then(res => {
+          this.setState({ orders: JSON.parse(res) });
+          return api.getOrderStats()
+        })
+        .then(res => this.setState({ stats: JSON.parse(res), loading: false }))
     }
 
     render () {
-        if (this.state.loading) return <div></div>
+      if (this.state.loading) return <div style={{ fontSize: 35, marginTop: 10, marginLeft: 10 }}>... Loading</div>
         return (
             <PageContainer>
                 <Header navigate={this.navigate.bind(this)} logout={this.handleLogout.bind(this)} user_type={this.props.user_type} />
                 <FormContainer>
                     <FormHeader>Order Statistics</FormHeader>
-                    <StatsContainer><Stat>Most: <strong>ID</strong></Stat></StatsContainer>
+                    <StatsContainer>
+                      <Stat>Sale Count: <strong>{this.state.stats.sale_count}</strong></Stat>
+                      <Stat>Gross Profits: <strong>${this.state.stats.gross_profits}</strong></Stat>
+                      <Stat>Net Profits: <strong>${this.state.stats.net_profits}</strong></Stat>
+                    </StatsContainer>
                 </FormContainer>
                 <FormContainer>
                     <FormHeader>Order Log</FormHeader>
