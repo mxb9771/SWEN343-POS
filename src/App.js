@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
 import { Provider } from 'react-redux'
 import { createStore } from 'redux';
 
-import Login from './pages/login';
 import Sale from './pages/sale';
 import Refund from './pages/refund';
 import Stats from './pages/stats';
@@ -22,7 +21,6 @@ class App extends Component {
                 <Route exact path='/' component={Sale} />
                 <Route path='/sale' component={Sale} />
                 <Route path='/refund' component={Refund} />
-                <Route path='/login' component={Login} />
                 <Route path='/stats' component={Stats} />
                 <Route path='/status' component={Status} />
             </Switch>

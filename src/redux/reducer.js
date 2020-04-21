@@ -1,20 +1,30 @@
-import { LOGIN_CUSTOMER, LOGIN_SALES_REP, LOGIN_SALES_MANAGER, LOGOUT } from './action_types';
+import { LOGIN, LOGOUT } from './action_types';
 import { CUSTOMER, SALES_MANAGER, SALES_REP } from './user_types';
+import Cookie from "js-cookie"
 
 const INITIAL_STATE = {
     user_type: CUSTOMER,
-    uid: ''
+    uid: '',
+    first_name: '',
+    last_name: '',
+    role: '',
+    manager_id: ''
 }
 
 const Reducer = function (state = INITIAL_STATE, action) {
     switch (action.type) {
-        case LOGIN_CUSTOMER:
-            return { ...state, user_type: CUSTOMER, uid: '' }
-        case LOGIN_SALES_REP:
-            return { ...state, user_type: SALES_REP, uid: 'd290f1ee-6c54-4b01-90e6-d701748f08aa' }
-        case LOGIN_SALES_MANAGER:
-            return { ...state, user_type: SALES_MANAGER, uid: 'd290f1ee-6c54-4b01-90e6-d701748f08aa' }
+        case LOGIN:
+            Cookie.set("token", action.payload.token);
+            return {
+                ...state, 
+                user_type: action.payload.RoleName, 
+                uid: action.payload.EmployeeId, 
+                first_name: action.payload.EmployeeFirstName,
+                last_name: action.payload.EmployeeLastName,
+                manager_id: action.payload.ManagerId
+            }
         case LOGOUT:
+            Cookie.remove("token")
             return { ...INITIAL_STATE }
         default:
             return state;

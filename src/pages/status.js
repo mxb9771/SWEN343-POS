@@ -9,6 +9,7 @@ import { connect } from 'react-redux';
 import style from '../style';
 import * as types from '../redux/action_types';
 import * as api from '../api';
+import * as user_types from '../redux/user_types';
 import { Header, Modal } from '../components';
 import {
   PageContainer,
@@ -32,12 +33,7 @@ class Status extends Component {
     state = this.INITIAL_STATE
 
     componentWillMount () {
-        // if (!this.props.uid) {
-        //     this.props.history.push('/login')
-        // }
-
-        // let products = api.getProducts();
-        // this.setState({ order: this.getOrder(this.state.products) });
+      api.handleAuthentication(window.location.search, this.props.login, this.props.user_type);  
     }
 
     render () {
@@ -51,7 +47,14 @@ class Status extends Component {
                     </Modal>
                   )
                 }
-                <Header navigate={this.navigate.bind(this)} logout={this.handleLogout.bind(this)} user_type={this.props.user_type} />
+                <Header
+                  page="/status"
+                  user={`${this.props.first_name} ${this.props.last_name} (${this.props.user_type})`}
+                  isAuthenticated={this.props.user_type !== user_types.CUSTOMER}
+                  navigate={this.navigate.bind(this)}
+                  logout={this.handleLogout.bind(this)} 
+                  user_type={this.props.user_type}
+                />
                 <FormContainer>
                     <FormHeader>Check Order Status</FormHeader>
                     <CustomerEntry>
@@ -93,7 +96,6 @@ class Status extends Component {
     handleLogout () {
         this.setState(this.INITIAL_STATE)
         this.props.logout();
-        this.props.history.push('/login');
     }
 
     navigate (to) {
@@ -113,15 +115,18 @@ const StatusMessage = styled.div`
 const mapDispatchToProps = dispatch => {
     return {
         logout: () => dispatch({ type: types.LOGOUT }),
+        login: payload => dispatch({ type: types.LOGIN, payload })
     }
 }
 
 const mapStateToProps = state => {
-    const { uid, user_type } = state;
+    const { uid, user_type, first_name, last_name } = state;
 
     return {
         uid,
-        user_type
+        user_type,
+        first_name,
+        last_name
     };
 };
 

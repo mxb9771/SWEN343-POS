@@ -35,8 +35,10 @@ class Stats extends Component {
     state = this.INITIAL_STATE
 
     componentWillMount () {
+      api.handleAuthentication(window.location.search, this.props.login, this.props.user_type);  
+
       if (this.props.user_type !== user_types.SALES_MANAGER) {
-        this.props.history.push('/login')
+        this.handleLogout();
       }
       api.getAllOrders()
         .then(res => {
@@ -50,7 +52,14 @@ class Stats extends Component {
       if (this.state.loading) return <div style={{ fontSize: 35, marginTop: 10, marginLeft: 10 }}>... Loading</div>
         return (
             <PageContainer>
-                <Header navigate={this.navigate.bind(this)} logout={this.handleLogout.bind(this)} user_type={this.props.user_type} />
+                <Header 
+                  page="/sale"
+                  user={`${this.props.first_name} ${this.props.last_name} (${this.props.user_type})`}
+                  isAuthenticated={this.props.user_type !== user_types.CUSTOMER}
+                  navigate={this.navigate.bind(this)}
+                  logout={this.handleLogout.bind(this)}
+                  user_type={this.props.user_type}
+                />
                 <FormContainer>
                     <FormHeader>Order Statistics</FormHeader>
                     <StatsContainer>
@@ -109,7 +118,7 @@ class Stats extends Component {
     handleLogout () {
         this.setState(this.INITIAL_STATE)
         this.props.logout();
-        this.props.history.push('/login');
+        this.props.history.push('/sale')
     }
 
     navigate (to) {
@@ -134,15 +143,18 @@ const Stat = styled.div`
 const mapDispatchToProps = dispatch => {
     return {
         logout: () => dispatch({ type: types.LOGOUT }),
+        login: payload => dispatch({ type: types.LOGIN, payload })
     }
 }
 
 const mapStateToProps = state => {
-    const { uid, user_type } = state;
+    const { uid, user_type, first_name, last_name } = state;
 
     return {
         uid,
-        user_type
+        user_type,
+        first_name,
+        last_name
     };
 };
 

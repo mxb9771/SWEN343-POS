@@ -4,7 +4,6 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 
-
 // local imports:
 
 import style from '../style';
@@ -41,16 +40,18 @@ class Sale extends Component {
         address: '',
         isInStock: true,
         orderId: '',
-        loading: true,
-        isModalShowing: false,
+        loading: false,
+        isModalShowing: false
     }
 
     state = this.INITIAL_STATE
 
-    componentWillMount () {
+    async componentWillMount () {
+        api.handleAuthentication(window.location.search, this.props.login, this.props.user_type);
         api.getAllProducts()
-            .then(res => this.setState({ order: this.getOrder(JSON.parse(res)), products: JSON.parse(res), loading: false }))
+            .then(res => this.setState({ order: this.getOrder(JSON.parse(res)), products: JSON.parse(res), loading: false }));        
     }
+
 
     render () {
         if (this.state.loading) return <div style={{ fontSize: 35, marginTop: 10, marginLeft: 10 }}>... Loading</div>
@@ -64,7 +65,13 @@ class Sale extends Component {
                     </Modal>
                   )
                 }
-                <Header navigate={this.navigate.bind(this)} logout={this.handleLogout.bind(this)} user_type={this.props.user_type} />
+                <Header
+                    page="/sale"
+                    user={`${this.props.first_name} ${this.props.last_name} (${this.props.user_type})`}
+                    isAuthenticated={this.props.user_type !== user_types.CUSTOMER}
+                    navigate={this.navigate.bind(this)} 
+                    logout={this.handleLogout.bind(this)} 
+                    user_type={this.props.user_type} />
                 <FormContainer>
                     <FormHeader>{this.props.user_type === user_types.SALES_REP ? 'Make a Sale' : 'Make a Purchase'}</FormHeader>
                     <CustomerEntry>
@@ -107,7 +114,7 @@ class Sale extends Component {
                     <SubmitButton 
                         disabled={!this.state.isButtonActive}
                         onClick={this.state.isButtonActive ? this.handleOrderButtonClick.bind(this) : null}>
-                            {this.props.user_type === 'sales_rep' ? 'Complete' : 'Purchase'}
+                            {this.props.user_type === user_types.SALES_REP ? 'Complete' : 'Purchase'}
                     </SubmitButton>
                 </FormContainer>
             </PageContainer>
@@ -245,7 +252,7 @@ class Sale extends Component {
     handleOrderButtonClick () {
         const { order, total, name, address, products } = this.state;
         this.setState({ loading: true })
-        api.makeOrder(order, total, name, address, this.props.uid)
+        api.makeOrder(order, total, name, address, this.props.uid, this.props.manager_id)
             .then(res => {
                 this.setState(this.INITIAL_STATE)
                 this.setState({ products, order: this.getOrder(products), loading: false, isModalShowing: true, orderId: res });
@@ -259,7 +266,6 @@ class Sale extends Component {
     handleLogout () {
         this.setState(this.INITIAL_STATE)
         this.props.logout();
-        this.props.history.push('/login')
     }
 }
 
@@ -279,19 +285,23 @@ const SaleMessage = styled.div`
 
 // redux:
 
-const mapDispatchToProps = dispatch => {
-    return {
-        logout: () => dispatch({ type: types.LOGOUT }),
-    }
-}
-
 const mapStateToProps = state => {
-    const { uid, user_type } = state;
+    const { uid, user_type, manager_id, first_name, last_name } = state;
 
     return {
         uid,
-        user_type
+        user_type,
+        manager_id,
+        first_name,
+        last_name
     };
 };
+
+const mapDispatchToProps = dispatch => {
+    return {
+        login: payload => dispatch({ type: types.LOGIN, payload }),
+        logout: () => dispatch({ type: types.LOGOUT })
+    }
+}
 
 export default connect(mapStateToProps, mapDispatchToProps)(Sale);
