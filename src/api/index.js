@@ -56,11 +56,19 @@ export const makeOrder = (order, total, name, address, salesPersonId, salesManag
 }
 
 export const getAllOrders = () => {
-    return request(cors_proxy_url + `${ec2_url}/order/all`);
+    var options = {
+        method: 'GET',
+        uri: cors_proxy_url + `${ec2_url}/order/all`
+    }
+    return request(options);
 }
 
 export const getOrderStats = () => {
-    return request(cors_proxy_url + `${ec2_url}/order/stats`);
+    var options = {
+        method: 'GET',
+        uri: cors_proxy_url + `${ec2_url}/order/stats`
+    }
+    return request(options);
 }
 
 export const getOrderStatus = orderId => {

@@ -8,13 +8,13 @@ import { CUSTOMER, SALES_MANAGER, SALES_REP } from '../redux/user_types';
 
 const Header = ({ user_type, logout, navigate, isAuthenticated, page, user }) => {
   const redirect_url = `${window.location.protocol}//${window.location.host}`
-  
+
   return (
     <Container>
       <Link onClick={() => navigate('/sale')}>Sale</Link>
       <Link onClick={() => navigate('/refund')}>Refund</Link>
       <Link onClick={() => navigate('/status')}>Status</Link>
-      { user_type === SALES_MANAGER && <Link onClick={() => navigate('/stats')}>Stats</Link>}
+      { (user_type === SALES_MANAGER || user_type === 'CEO') && <Link onClick={() => navigate('/stats')}>Stats</Link>}
       <RightPosition>
         { (user && user_type !== CUSTOMER) && <User>{user}</User>}
         { isAuthenticated &&  <AuthLink onClick={logout}>Logout</AuthLink> }
