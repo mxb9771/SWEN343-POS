@@ -1,68 +1,63 @@
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Available Scripts
+This is the frontend code I wrote for a school project which tasked 5 student teams to create single components for a larger ERP
+application. I was assigned sales, and wrote all the frontend code. Our component was responsible for:
+1. Making orders (Either as a customer, or sales representative)
+2. Requesting an order refund
+3. Checking all sales and overall sales statistics
+4. Checking the status of an order
 
-In the project directory, you can run:
+The focus was definitely not on frontend pixel perfection, but the component works as intended and integrates well.
 
-### `yarn start`
+## Get started
+Unzip the file and cd into the project directory. Here you can run:
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+#### `npm install`
+or
+#### `yarn`
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+Install package dependencies
 
-### `yarn test`
+#### `npm start`
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Runs the application on localhost:3000
 
-### `yarn build`
+## Usage
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
+If you want to try out the app, here's what you can do:
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
+### Login
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+This will take you to another team's single sign on portal. I DID NOT write this, but I wrote logic for redirecting, and saving a token as a JWT,
+and saving user info from the token in redux.
 
-### `yarn eject`
+#### Steps:
+1. Click 'Login' button in top right
+2. Enter username: 'ejd3081', password: 'password123'
+3. You will be redirected back as user 'Ethan Della Posta' DONE!
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+### Make a sale
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+#### Steps:
+1. Enter customer name, address
+2. Enter a number in any product quantity field
+3. Optionally, modify the price of that product
+4. Click 'Submit'
+5. Once complete, modal will pop up with the order id. Copy this value.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+### Make a refund/check order status
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+#### Steps:
+1. Navigate to either refund ot status (navigation bar at top)
+2. Paste the order ID into the corresponding field
+3. Once complete, modal will pop up with status
 
-## Learn More
+### Check overall statistics and log of all sales
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+#### Steps:
+1. Navigate to either stats page
+2. Here you can see stats and a log of orders
 
-To learn React, check out the [React documentation](https://reactjs.org/).
 
-### Code Splitting
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
 
-### Analyzing the Bundle Size
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
-
-### Making a Progressive Web App
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
-
-### Advanced Configuration
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
-
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `yarn build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
